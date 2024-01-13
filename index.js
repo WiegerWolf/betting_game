@@ -1,6 +1,6 @@
-const startingMoney = 25;
-const maxTakeHomeMoney = 250;
-const probabilityOfHeads = 0.6;
+const startingMoney = 25; // 25 dollars
+const maxTakeHomeMoney = 250; // 250 dollars
+const probabilityOfHeads = 0.6; // 60% chance of heads and 40% chance of tails in a coin flip
 
 let currentMoney = startingMoney;
 let currentStrategy = 'betOnHeads';
@@ -9,15 +9,15 @@ function flipCoin() {
     return Math.random() < probabilityOfHeads ? 'Heads' : 'Tails';
 }
 
-// Test different betting strategies here
+// Different strategies to bet on heads or tails
 const STRATEGY = {
     // Always bet on heads
-    betOnHeads() {
+    betAlwaysOnHeads() {
         return 'Heads';
     },
 
     // Always bet on tails
-    betOnTails() {
+    betAlwaysOnTails() {
         return 'Tails';
     },
 
@@ -45,41 +45,86 @@ const STRATEGY = {
     betOnHeads40PercentOfTheTime() {
         return Math.random() < 0.4 ? 'Heads' : 'Tails';
     },
+
+    wins: 0,
+    // Bet on tails only if you have already won 3 times in a row
+    betOnTailsAfterWinning3TimesInARow() {
+        const bet = this.wins >= 3 ? 'Tails' : 'Heads';
+        this.wins = bet === 'Tails' ? 0 : this.wins + 1;
+        return bet;
+    },
+
+    wins_2: 0,
+    // Bet on tails only if you have already won 7 times in a row
+    betOnTailsAfterWinning7TimesInARow() {
+        const bet = this.wins_2 >= 7 ? 'Tails' : 'Heads';
+        this.wins_2 = bet === 'Tails' ? 0 : this.wins_2 + 1;
+        return bet;
+    },
 }
 
+// Run the simulation for a given percentage of money to bet
 function run(percentage = 0.2) {
-    // Now let's run the simulation
-    for (let i = 0; i < 100; i++) {
+    for (let i = 0; i < 100; i++) { // run the simulation for 100 rounds or until you run out of money or reach the max take home money
         if (currentMoney <= 0 || currentMoney >= maxTakeHomeMoney) {
             break;
         }
 
-        // always bet 20% of your current money
         const betAmount = Math.round(currentMoney * percentage);
         const bet = STRATEGY[currentStrategy]();
         const result = flipCoin();
 
         if (bet === result) {
-            currentMoney += betAmount;
+            currentMoney += betAmount; // you win, so add the bet amount to your money
         }
         else {
-            currentMoney -= betAmount;
+            currentMoney -= betAmount; // you lose, so subtract the bet amount from your money
         }
     }
 
-    return currentMoney;
+    return currentMoney; // return the money you have at the end of the simulation
 }
 
+// Run the simulation 1000 times and return the average
 function simulate(p) {
     const results = [];
     for (let i = 0; i < 1000; i++) {
         currentMoney = startingMoney;
-        results.push(run(p));
+        results.push(run(p)); // run the simulation for a given percentage of money to bet
     }
     // return the average
     return results.reduce((a, b) => a + b, 0) / results.length;
 }
 
+function stragegyRun(strategy) {
+    currentStrategy = strategy; // set the current strategy
+    let results = {}; // to store the results for different percentages of money to bet
+    for (let i = 0; i < 100; i++) { // run the simulation for different percentages of money to bet
+        results[i] = simulate(i / 100);
+    }
+
+    // visualize the results
+    let chart = TUIChart(Object.entries(results).map(([k, v]) => ({ x: k, y: v })));
+    console.log(currentStrategy, `min: ${chart.minValue}, max: ${chart.maxValue}`);
+    console.log(chart.print());
+
+    // print space for the next chart
+    console.log('\n\n');
+
+}
+
+stragegyRun('betAlwaysOnHeads');
+stragegyRun('betOnTailsAfterWinning3TimesInARow');
+stragegyRun('betOnTailsAfterWinning7TimesInARow');
+stragegyRun('betOnHeads80PercentOfTheTime');
+stragegyRun('betOnHeads60PercentOfTheTime');
+stragegyRun('betOnHeadsHalfTheTime');
+stragegyRun('betOnHeads40PercentOfTheTime');
+stragegyRun('betOnHeads20PercentOfTheTime');
+stragegyRun('betAlwaysOnTails');
+
+
+// HELPER FUNCTIONS -- nothing to do with the simulation
 // Print the results on the console using ascii
 function TUIChart(chartData) {
     const width = 100;
@@ -118,29 +163,3 @@ function TUIChart(chartData) {
 
     return chart
 }
-
-function stragegyRun(strategy) {
-    currentStrategy = strategy;
-    let results = {};
-    for (let i = 0; i < 100; i++) {
-        results[i] = simulate(i / 100);
-    }
-
-    // visualize the results
-    results = Object.entries(results).map(([k, v]) => ({ x: k, y: v }));
-    let chart = TUIChart(results);
-    console.log(currentStrategy, `min: ${chart.minValue}, max: ${chart.maxValue}`);
-    console.log(chart.print());
-
-    // print space for the next chart
-    console.log('\n\n');
-
-}
-
-stragegyRun('betOnHeads');
-stragegyRun('betOnHeads80PercentOfTheTime');
-stragegyRun('betOnHeads60PercentOfTheTime');
-stragegyRun('betOnHeadsHalfTheTime');
-stragegyRun('betOnHeads40PercentOfTheTime');
-stragegyRun('betOnHeads20PercentOfTheTime');
-stragegyRun('betOnTails');
