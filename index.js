@@ -125,19 +125,22 @@ function stragegyRun(strategy) {
     for (let i = 0; i < 100; i++) {
         results[i] = simulate(i / 100);
     }
+
     // visualize the results
     results = Object.entries(results).map(([k, v]) => ({ x: k, y: v }));
     let chart = TUIChart(results);
     console.log(currentStrategy, `min: ${chart.minValue}, max: ${chart.maxValue}`);
     console.log(chart.print());
-    // print delimiter line
-    console.log('#'.repeat(100));
+
+    // print space for the next chart
+    console.log('\n\n');
+
 }
 
 stragegyRun('betOnHeads');
-stragegyRun('betOnTails');
-stragegyRun('betOnHeadsHalfTheTime');
-stragegyRun('betOnHeads20PercentOfTheTime');
 stragegyRun('betOnHeads80PercentOfTheTime');
 stragegyRun('betOnHeads60PercentOfTheTime');
+stragegyRun('betOnHeadsHalfTheTime');
 stragegyRun('betOnHeads40PercentOfTheTime');
+stragegyRun('betOnHeads20PercentOfTheTime');
+stragegyRun('betOnTails');
